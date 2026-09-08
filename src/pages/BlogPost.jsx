@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { posts } from "../blog/posts.js";
+import { posts, isPublished } from "../blog/posts.js";
 import { siteConfig } from "../siteConfig.js";
 import CTA from "../components/CTA.jsx";
 
@@ -19,9 +19,9 @@ export default function BlogPost() {
   const today = new Date();
   const idx  = posts.findIndex((p) => p.slug === slug);
   const post = posts[idx];
-  const isPublished = post && new Date(post.date + "T09:00:00") <= today;
+  const live = post && isPublished(post, today);
 
-  if (!post || !isPublished) {
+  if (!post || !live) {
     return (
       <div className="pageMinHeight">
         {/* This branch had no Helmet at all, so a bad or not-yet-published
@@ -45,8 +45,8 @@ export default function BlogPost() {
   }
 
   const { Component, title, description, dateDisplay, readTime, category, coverImage, coverAlt } = post;
-  const prev = posts.slice(idx + 1).find(p => new Date(p.date + "T09:00:00") <= today);
-  const next = posts.slice(0, idx).findLast(p => new Date(p.date + "T09:00:00") <= today);
+  const prev = posts.slice(idx + 1).find(p => isPublished(p, today));
+  const next = posts.slice(0, idx).findLast(p => isPublished(p, today));
 
   return (
     <div className="pageMinHeight">

@@ -60,6 +60,41 @@ try {
   record("GET /homework redirects", false, e.message);
 }
 
+// ── The sitemap must not advertise pages that answer "noindex" ─────────────
+//
+// On 2026-09-06 Search Console emailed about "Excluded by 'noindex' tag": the
+// static sitemap listed all 34 blog posts, 19 of them future-dated and still
+// serving BlogPost.jsx's noindex branch. /sitemap.xml is generated per request
+// now, and this is the check that it is still generated and still correct in
+// production. Nothing on the site links to it, which is the whole reason it
+// belongs in this file.
+try {
+  const { postMeta, isPublished } = await import("../src/blog/postMeta.js");
+  const r = await get("/sitemap.xml");
+  const served = r.status === 200 && r.body.includes("<urlset");
+  record("GET /sitemap.xml is generated", served, `${r.status}`);
+
+  if (served) {
+    const scheduled = postMeta.filter((p) => !isPublished(p));
+    const leaked = scheduled.filter((p) => r.body.includes(`/blog/${p.slug}<`));
+    record(
+      "sitemap lists no unpublished post",
+      leaked.length === 0,
+      leaked.length ? leaked.map((p) => p.slug).join(", ") : `${scheduled.length} scheduled, none listed`,
+    );
+
+    const live = postMeta.filter((p) => isPublished(p));
+    const missing = live.filter((p) => !r.body.includes(`/blog/${p.slug}<`));
+    record(
+      "sitemap lists every published post",
+      missing.length === 0,
+      missing.length ? missing.map((p) => p.slug).join(", ") : `${live.length} live`,
+    );
+  }
+} catch (e) {
+  record("GET /sitemap.xml is generated", false, e.message);
+}
+
 // ── The endpoint must exist and must refuse junk ───────────────────────────
 // Deliberately NOT a valid submission: a smoke test that emails somebody and
 // writes a lead row every time it runs will be turned off within a week.

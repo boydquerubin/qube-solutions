@@ -2,12 +2,12 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowRight } from "lucide-react";
-import { posts } from "../blog/posts.js";
+import { posts, isPublished } from "../blog/posts.js";
 import { siteConfig } from "../siteConfig.js";
 
 export default function BlogList() {
   const today = new Date();
-  const published = posts.filter(p => new Date(p.date + "T09:00:00") <= today);
+  const published = posts.filter(p => isPublished(p, today));
   const featured = published[0];
   const rest = published.slice(1);
 

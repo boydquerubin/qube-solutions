@@ -344,6 +344,11 @@ Run this before going live with every site.
 - [ ] Google Analytics 4 installed and tracking (verify a pageview fires)
 - [ ] Google Search Console verified and sitemap submitted
 - [ ] sitemap.xml accessible at /sitemap.xml
+- [ ] Nothing in the sitemap answers with a noindex tag. Scheduled blog posts and
+      unlisted pages are the two that catch people out: submitting a URL that
+      refuses to be indexed is what triggers Search Console's "Excluded by
+      'noindex' tag" warning. On rubyxqube.com the sitemap is generated per
+      request by api/sitemap.js so it cannot drift. npm test guards it.
 - [ ] Google Business Profile updated with new website URL
 - [ ] Page speed ≥ 85 on PageSpeed Insights mobile (images WebP, no render-blocking scripts)
 
